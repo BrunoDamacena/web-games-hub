@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { normalizeWord, pickAnswer, scoreGuess, updateLetterScores } from '../dist/games/palavra/rules.mjs';
+import { normalizeWord, pickAnswer, scoreGuess, updateLetterScores } from '../src/games/palavra/rules.mjs';
 
 test('ignores accents and cedillas', () => {
   assert.equal(normalizeWord('AÇÕES'), 'acoes');
@@ -21,7 +21,7 @@ test('never immediately repeats the preceding answer', () => {
 
 test('Termo snapshot preserves the guess and answer counts and accented spellings', async () => {
   const load = async filename => {
-    const url = new URL(`../dist/games/palavra/${filename}`, import.meta.url);
+    const url = new URL(`../src/games/palavra/${filename}`, import.meta.url);
     return (await readFile(url, 'utf8')).trim().split('\n');
   };
   const [words, answers] = await Promise.all([load('palavras.txt'), load('respostas.txt')]);

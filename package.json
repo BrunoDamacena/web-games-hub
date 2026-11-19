@@ -5,10 +5,11 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "serve dist --listen tcp://127.0.0.1:8000 --no-port-switching",
+    "dev": "npm run build && serve build --listen tcp://127.0.0.1:8000 --no-port-switching",
     "start": "npm run dev",
     "test": "node --test",
-    "deploy:check": "npm test"
+    "deploy:check": "npm test && npm run build",
+    "build": "node scripts/build.mjs"
   },
   "devDependencies": {
     "serve": "14.2.8"

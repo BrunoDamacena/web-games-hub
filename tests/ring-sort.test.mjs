@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { colors, generatePuzzle } from '../dist/games/ring-sort/puzzle.mjs';
-import { addExtraPeg, createGame, isSolved, moveRing, undoMove } from '../dist/games/ring-sort/rules.mjs';
+import { colors, generatePuzzle } from '../src/games/ring-sort/puzzle.mjs';
+import { addExtraPeg, createGame, isSolved, moveRing, undoMove } from '../src/games/ring-sort/rules.mjs';
 
 const layout = [['B', 'C'], ['C'], ['B'], []];
 
