@@ -35,4 +35,10 @@ The Ring Sort tests use Node's built-in test runner and can run before installin
 
 ## Deployment
 
-Run `npm run deploy:check` to verify the game logic before publishing. Then publish the contents of `dist/` with your static hosting provider. Set the publish directory to `dist` and leave the build command blank if your provider asks for those settings.
+In the `web-games-hub` repository, open **Settings → Pages** and select **GitHub Actions** as the source under **Build and deployment**.
+
+The deployment workflow runs on pushes to `main`. It runs `npm run deploy:check`, packages `dist/` as-is, and publishes it to [Web Games Hub](https://brunodamacena.github.io/web-games-hub/) when the checks pass. To redeploy the current `main` manually, open **Actions → Deploy to GitHub Pages → Run workflow** and select `main`.
+
+### Require deployment checks before merging
+
+The **Deployment readiness** job runs `npm run deploy:check` on pull requests targeting `main`. After the check passes on GitHub for the first time, open **Settings → Branches** and add or edit the protection rule for `main`. Enable **Require status checks to pass before merging** and select **Deployment readiness** from GitHub Actions. Enable **Require branches to be up to date before merging** to check against the latest `main`. Enable **Do not allow bypassing the above settings** to apply the rule to administrators as well.
