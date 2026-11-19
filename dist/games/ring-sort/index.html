@@ -5,12 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Separe os anéis por cor no seu ritmo na Central de Jogos.">
   <title>Anéis por Cor · Central de Jogos</title>
+  <script src="../../theme.js"></script>
   <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
   <header class="site-header"><nav>
     <a class="brand" href="../../"><span class="mark" aria-hidden="true">◎</span> <span class="brand-name">Central de Jogos</span></a>
-    <a class="nav-link" href="../../">Todos os jogos</a>
+    <div class="header-actions">
+      <a class="nav-link" href="../../">Todos os jogos</a>
+      <button id="site-theme" class="theme-switch" type="button" role="switch"
+              aria-label="Modo escuro" aria-checked="false" hidden>
+        <svg class="theme-sun" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/>
+        </svg>
+        <svg class="theme-moon" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20.5 15.1A9 9 0 0 1 8.9 3.5a9 9 0 1 0 11.6 11.6Z"/>
+        </svg>
+      </button>
+    </div>
   </nav></header>
   <main>
     <section id="game" aria-labelledby="game-title">
