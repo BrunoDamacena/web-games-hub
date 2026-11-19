@@ -15,7 +15,7 @@ npm ci
 npm run dev
 ```
 
-Open [Web Games Hub locally](http://127.0.0.1:8000) and select a game from the menu. `npm start` also starts the local server. Run `npm run build` after making edits in `src/`, then refresh the page. When finished, press **Ctrl+C** in the terminal to stop the server.
+Open [Web Games Hub locally](http://127.0.0.1:8000) and select a game from the menu. `npm start` also starts the local server. The dev server rebuilds automatically when files in `src/` change. Refresh the browser after the rebuild. When finished, press **Ctrl+C** in the terminal to stop the server.
 
 ## Project layout
 

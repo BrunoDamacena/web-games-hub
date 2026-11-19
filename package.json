@@ -5,7 +5,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "dev": "npm run build && serve build --listen tcp://127.0.0.1:8000 --no-port-switching",
+    "dev": "node scripts/dev.mjs",
     "start": "npm run dev",
     "test": "node --test",
     "deploy:check": "npm test && npm run build",
