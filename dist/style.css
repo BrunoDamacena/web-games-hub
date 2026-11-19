@@ -40,26 +40,52 @@ h1 em { color: var(--purple); font-style: normal; }
 .moves { padding-right: 6px; }
 .moves strong { color: #32204d; font-size: 1.15rem; }
 .playfield { position: relative; min-height: 290px; display: grid; place-items: center; padding: 22px 14px; border: 1px solid #e8dcff; border-radius: 16px; background: radial-gradient(circle at 50% 4%, #fff9, transparent 65%), radial-gradient(#ad94df62 1px, transparent 1px) 0 0 / 16px 16px, #f0e8ff; }
-.board { display: grid; grid-template-columns: repeat(var(--columns), minmax(0, 1fr)); gap: 8px; justify-content: center; width: min(100%, 740px); }
-.board[data-size="4"] { width: min(100%, 520px); }
-.board[data-size="5"] { width: min(100%, 610px); }
+.board {
+  --ring-step: 23px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(54px, 1fr));
+  gap: 8px;
+  width: min(100%, 740px, calc(var(--columns) * 120px));
+}
+.board.tall { --ring-step: 14px; }
+.board.tall .peg { height: calc(89px + var(--capacity) * var(--ring-step)); }
+
 .peg { height: 204px; min-width: 0; position: relative; border: 1px solid transparent; border-radius: 14px; background: transparent; touch-action: manipulation; }
 .peg:hover { background: #fff7; }
+.peg[aria-disabled="true"] { cursor: default; background: #f4fbf280; border-color: #79a686; }
+.peg[aria-disabled="true"]::after { content: "✓"; position: absolute; top: 5px; right: 5px; color: #276443; font-weight: 900; }
 .peg[aria-pressed="true"] { background: #ffffff99; border-color: #ab91ef; }
 .peg.invalid { animation: shake .25s; }
 @keyframes shake { 30% { transform: translateX(-4px); } 70% { transform: translateX(4px); } }
 .post, .foot, .ring { position: absolute; left: 50%; transform: translateX(-50%); pointer-events: none; }
-.post { bottom: 35px; width: 14px; height: calc(38px + var(--capacity) * 23px); border-radius: 9px 9px 3px 3px; background: linear-gradient(90deg, #9f86cd, #d9c7f7 48%, #a98ed4); box-shadow: inset 0 2px 2px #ffffffa0; }
+.post { bottom: 35px; width: 14px; height: calc(38px + var(--capacity) * var(--ring-step)); border-radius: 9px 9px 3px 3px; background: linear-gradient(90deg, #9f86cd, #d9c7f7 48%, #a98ed4); box-shadow: inset 0 2px 2px #ffffffa0; }
 .foot { bottom: 26px; width: 88%; max-width: 100px; height: 15px; border-radius: 50%; border-bottom: 4px solid #ab91d6; background: #d8c5f5; box-shadow: 0 5px 8px #7a53af30; }
-.ring { bottom: calc(36px + var(--slot) * 23px); width: 82%; max-width: 86px; height: 32px; border-radius: 50%; background: var(--light); border-bottom: 9px solid var(--dark); box-shadow: inset 0 2px 1px #ffffff8c, 0 3px 3px #3d176d35; display: grid; place-items: center; transition: bottom .16s ease; }
+.ring { bottom: calc(36px + var(--slot) * var(--ring-step)); width: 82%; max-width: 86px; height: 32px; border-radius: 50%; background: var(--light); border-bottom: 9px solid var(--dark); box-shadow: inset 0 2px 1px #ffffff8c, 0 3px 3px #3d176d35; display: grid; place-items: center; transition: bottom .16s ease; }
 .ring::after { content: ""; position: absolute; top: 5px; width: 30%; height: 11px; border-radius: 50%; background: #302049; box-shadow: inset 0 2px 3px #21112ba0; }
 .ring::before { content: ""; z-index: 1; position: absolute; top: 5px; width: 10px; height: 8px; border-radius: 50%; background: #d6c0f1; }
-.ring.lifted { bottom: calc(57px + var(--capacity) * 23px); }
+.ring.lifted { bottom: calc(57px + var(--capacity) * var(--ring-step)); }
 .ring[data-color="C"] { --light: #ff8b78; --dark: #c74e49; }
 .ring[data-color="B"] { --light: #69afff; --dark: #3567d1; }
 .ring[data-color="P"] { --light: #b28aff; --dark: #794ad9; }
 .ring[data-color="L"] { --light: #ffd577; --dark: #c08a33; }
 .ring[data-color="G"] { --light: #62d8ae; --dark: #288c77; }
+.ring[data-color="T"] { --light: #46c6cb; --dark: #197b89; }
+.ring[data-color="R"] { --light: #f25965; --dark: #9b273a; }
+.ring[data-color="I"] { --light: #7f83ed; --dark: #4149b1; }
+.ring[data-color="O"] { --light: #ffa059; --dark: #bd5822; }
+.ring[data-color="K"] { --light: #ff9ec9; --dark: #ba4e83; }
+.ring[data-color="S"] { --light: #91ddf9; --dark: #3a95bb; }
+.ring[data-color="V"] { --light: #a6ae65; --dark: #666c36; }
+.ring[data-color="M"] { --light: #df73d5; --dark: #94408c; }
+.ring[data-color="A"] { --light: #f6ac32; --dark: #ab651c; }
+.ring[data-color="N"] { --light: #536cae; --dark: #2a3c75; }
+.ring[data-color="E"] { --light: #51bb77; --dark: #247345; }
+.ring[data-color="U"] { --light: #9c68a7; --dark: #65406f; }
+.ring[data-color="D"] { --light: #bb8a73; --dark: #784e3e; }
+.ring[data-color="Y"] { --light: #bde46c; --dark: #748f37; }
+.ring[data-color="H"] { --light: #a4b0c1; --dark: #5e6f86; }
+.board.tall .ring { height: 24px; border-bottom-width: 5px; }
+.board.tall .ring[data-color="?"] { align-items: start; font-size: 13px; line-height: 14px; }
 .ring[data-color="?"] { --light: #716086; --dark: #49385d; color: white; font-weight: 900; }
 .ring[data-color="?"]::before, .ring[data-color="?"]::after { display: none; }
 .status { text-align: center; color: #57446e; min-height: 24px; margin: 13px 0 10px; }
@@ -91,8 +117,7 @@ h1 em { color: var(--purple); font-style: normal; }
   .machine { padding: 10px; }
   .playfield { min-height: 240px; padding: 10px 6px; }
   .board { gap: 3px; }
-  .board[data-size="5"], .board[data-size="6"], .board[data-size="7"], .board[data-size="8"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .peg { height: calc(89px + var(--capacity) * 23px); }
+  .peg { height: calc(89px + var(--capacity) * var(--ring-step)); }
   .controls button { padding-inline: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -105,5 +130,3 @@ h1 em { color: var(--purple); font-style: normal; }
 .puzzle-setup .level { letter-spacing: 0; }
 .mystery-option { display: inline-flex; align-items: center; gap: 5px; font-size: .875rem; font-weight: 700; color: #513985; }
 .mystery-option input { accent-color: var(--purple); }
-.puzzle-setup button { border: 0; border-radius: 9px; background: #6440cb; color: white; min-height: 38px; padding: 6px 12px; font-weight: 800; }
-.puzzle-setup button:hover { background: #502dac; }

@@ -36,6 +36,18 @@ test('undo reverses moves in order and can reopen a solved board', () => {
   assert.deepEqual(game, createGame({ layout, cap: 2 }));
 });
 
+test('completed pegs are locked during play and undo can reverse their completion', () => {
+  const game = createGame({ layout, cap: 2 });
+  assert.equal(moveRing(game, 0, 1), 'moved');
+  const completed = structuredClone(game);
+  assert.equal(moveRing(game, 1, 3), 'locked');
+  assert.equal(moveRing(game, 0, 1), 'full');
+  assert.deepEqual(game, completed);
+
+  assert.equal(undoMove(game), true);
+  assert.equal(moveRing(game, 1, 3), 'moved');
+});
+
 test('mystery rings reveal at the top and stay revealed after undo', () => {
   const puzzle = { layout, cap: 2, mystery: true };
   const game = createGame(puzzle);
@@ -75,8 +87,7 @@ test('generates a fresh mixed board with the requested ring counts and space', t
       for (let sample = 0; sample < 40; sample++) {
         const layout = generatePuzzle(count, cap, previous);
         assert.equal(layout.length, count + 1);
-        assert.equal(layout.filter(peg => peg.length === 0).length, 1);
-        assert.ok(layout.every(peg => !peg.length || (peg.length === cap && peg[0] !== peg[1])));
+        assert.ok(layout.every(peg => peg.length <= cap && (peg.length < 2 || peg[0] !== peg[1])));
         assert.equal(isSolved(createGame({ layout, cap })), false);
         assert.deepEqual(layout.flat().sort(), expected);
         assert.notDeepEqual(layout, previous);
@@ -86,7 +97,7 @@ test('generates a fresh mixed board with the requested ring counts and space', t
   }
 });
 
-test('a generated puzzle can be solved using the normal move rules', t => {
+test('a generated puzzle with no empty peg can be solved using the normal move rules', t => {
   let seed = 42;
   t.mock.method(Math, 'random', () => {
     seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
@@ -94,7 +105,10 @@ test('a generated puzzle can be solved using the normal move rules', t => {
   });
 
   const cap = 3;
-  const pending = [createGame({ layout: generatePuzzle(3, cap), cap })];
+  const board = Array.from({ length: 30 }, () => generatePuzzle(3, cap))
+    .find(pegs => pegs.every(peg => peg.length));
+  assert.ok(board, 'Expected a board with the spare slots split across pegs');
+  const pending = [createGame({ layout: board, cap })];
   const visited = new Set();
   while (pending.length) {
     const game = pending.pop();
@@ -112,4 +126,45 @@ test('a generated puzzle can be solved using the normal move rules', t => {
     }
   }
   assert.fail('The generated board had no legal solution');
+});
+
+test('tall puzzles rarely group matching rings at the top', t => {
+  let seed = 42;
+  t.mock.method(Math, 'random', () => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return seed / 2 ** 32;
+  });
+
+  let matchingTops = 0;
+  for (let sample = 0; sample < 30; sample++) {
+    const layout = generatePuzzle(5, 5);
+    matchingTops += layout.filter(peg => peg.length > 1 && peg.at(-1) === peg.at(-2)).length;
+  }
+  assert.ok(matchingTops <= 15, `Expected at most 15 matching tops across 30 boards, got ${matchingTops}`);
+});
+
+test('supports 20 colors, 20 rings per stack, and both limits together', () => {
+  for (const [count, cap] of [[20, 2], [2, 20], [20, 20]]) {
+    const layout = generatePuzzle(count, cap);
+    assert.equal(layout.length, count + 1);
+    assert.ok(layout.every(peg => peg.length <= cap));
+    const expected = Object.keys(colors).slice(0, count).flatMap(color => Array(cap).fill(color)).sort();
+    assert.deepEqual(layout.flat().sort(), expected);
+  }
+});
+
+
+test('maximum-size puzzles break up long runs throughout the stacks', t => {
+  let seed = 42;
+  t.mock.method(Math, 'random', () => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return seed / 2 ** 32;
+  });
+
+  for (let sample = 0; sample < 4; sample++) {
+    const layout = generatePuzzle(20, 20);
+    const matchingNeighbors = layout.reduce((total, peg) =>
+      total + peg.filter((color, slot) => slot > 0 && color === peg[slot - 1]).length, 0);
+    assert.ok(matchingNeighbors < 150, `Expected fewer matching neighbors, got ${matchingNeighbors}`);
+  }
 });

@@ -1,18 +1,19 @@
-import { colors, generatePuzzle } from './puzzle.mjs';
-import { addExtraPeg, createGame, isSolved, moveRing, undoMove } from './rules.mjs';
+import { colors, generatePuzzle, maxColors, maxHeight } from './puzzle.mjs';
+import { addExtraPeg, createGame, isCompletePeg, isSolved, moveRing, undoMove } from './rules.mjs';
 
 const prompts = {
   start: 'Tap a peg to pick up its top ring.',
   empty: 'Choose a peg with a ring on it.',
 };
 const elements = Object.fromEntries(
-  ['setup', 'colors', 'height', 'mystery', 'moves', 'board', 'status', 'win', 'next', 'undo', 'restart', 'extra']
+  ['setup', 'colors', 'height', 'mystery', 'moves', 'board', 'status', 'win', 'result', 'next', 'undo', 'restart', 'extra', 'give-up']
     .map(id => [id, document.getElementById(id)]),
 );
 
 let puzzle;
 let game;
 let selected;
+let phase = 'setup';
 
 function say(message) {
   elements.status.textContent = message;
@@ -21,26 +22,32 @@ function say(message) {
 function render() {
   const focusedPeg = document.activeElement?.dataset.peg;
   const { cap, pegs, history, extra } = game;
-  const won = isSolved(game);
+  const finished = phase === 'finished';
+  elements.setup.hidden = phase !== 'setup';
+  elements['give-up'].hidden = phase !== 'playing';
   elements.moves.textContent = history.length;
-  elements.undo.disabled = history.length === 0;
-  elements.extra.disabled = extra || won;
+  elements.undo.disabled = finished || history.length === 0;
+  elements.restart.disabled = finished;
+  elements.extra.disabled = extra || finished;
   elements.extra.lastChild.textContent = extra ? ' Peg added' : ' Extra peg';
-  elements.win.hidden = !won;
-  elements.board.inert = won;
-  elements.board.dataset.size = pegs.length;
+  elements.win.hidden = !finished;
+  elements.board.inert = finished;
+  elements.board.classList.toggle('tall', cap > 5);
   elements.board.style.setProperty('--columns', pegs.length);
   elements.board.style.setProperty('--capacity', cap);
 
   const buttons = pegs.map((peg, index) => {
+    const complete = isCompletePeg(peg, cap);
     const button = document.createElement('button');
     button.className = 'peg';
     button.type = 'button';
     button.dataset.peg = index;
     button.setAttribute('aria-pressed', selected === index);
-    const names = peg.map(ring => ring.revealed ? colors[ring.color] : 'mystery ring').reverse();
+    if (complete) button.setAttribute('aria-disabled', 'true');
+    const names = peg.map(ring => complete || ring.revealed ? colors[ring.color] : 'mystery ring').reverse();
     button.setAttribute('aria-label', 'Peg ' + (index + 1) + ', ' +
-      (names.length ? names.join(', ') + ' from top to bottom' : 'empty') + ', capacity ' + cap);
+      (names.length ? names.join(', ') + ' from top to bottom' : 'empty') +
+      ', capacity ' + cap + (complete ? ', complete and locked' : ''));
     for (const part of ['post', 'foot']) {
       const shape = document.createElement('span');
       shape.className = part;
@@ -51,8 +58,9 @@ function render() {
       const shape = document.createElement('span');
       shape.className = 'ring';
       shape.setAttribute('aria-hidden', 'true');
-      shape.dataset.color = ring.revealed ? ring.color : '?';
-      if (!ring.revealed) shape.textContent = '?';
+      const visible = complete || ring.revealed;
+      shape.dataset.color = visible ? ring.color : '?';
+      if (!visible) shape.textContent = '?';
       shape.style.setProperty('--slot', slot);
       shape.classList.toggle('lifted', selected === index && slot === peg.length - 1);
       button.append(shape);
@@ -61,8 +69,8 @@ function render() {
     return button;
   });
   elements.board.replaceChildren(...buttons);
-  if (focusedPeg !== undefined) {
-    (won ? elements.next : buttons[focusedPeg])?.focus({ preventScroll: true });
+  if (!finished && focusedPeg !== undefined) {
+    buttons[focusedPeg]?.focus({ preventScroll: true });
   }
 }
 
@@ -74,7 +82,12 @@ function start() {
 }
 
 function choose(index, button) {
+  if (phase === 'finished') return;
   const target = game.pegs[index];
+  if (isCompletePeg(target, game.cap)) {
+    say('That peg is complete and locked.');
+    return;
+  }
   if (selected === index) {
     selected = null;
     render();
@@ -101,9 +114,23 @@ function choose(index, button) {
     return;
   }
 
+  if (isSolved(game)) {
+    finish('Nicely sorted!', 'Puzzle complete in ' + game.history.length + ' moves.');
+    return;
+  }
+  phase = 'playing';
   selected = null;
   render();
-  say(isSolved(game) ? 'Puzzle complete in ' + game.history.length + ' moves.' : prompts.start);
+  say(prompts.start);
+}
+
+function finish(title, message) {
+  phase = 'finished';
+  selected = null;
+  elements.result.textContent = title;
+  render();
+  say(message);
+  elements.next.focus();
 }
 
 function newPuzzle() {
@@ -114,24 +141,37 @@ function newPuzzle() {
   start();
 }
 
-elements.setup.addEventListener('submit', event => {
-  event.preventDefault();
-  newPuzzle();
+elements.setup.addEventListener('change', () => {
+  if (phase === 'setup') newPuzzle();
 });
-elements.restart.addEventListener('click', start);
+elements.restart.addEventListener('click', () => {
+  if (phase !== 'finished') start();
+});
 elements.undo.addEventListener('click', () => {
-  if (!undoMove(game)) return;
+  if (phase === 'finished' || !undoMove(game)) return;
   selected = null;
   render();
   say('Move undone. ' + prompts.start);
 });
 elements.extra.addEventListener('click', () => {
-  if (!addExtraPeg(game)) return;
+  if (phase === 'finished' || !addExtraPeg(game)) return;
   render();
   say('An empty peg has been added.');
 });
-elements.next.addEventListener('click', () => {
-  newPuzzle();
-  elements.board.firstElementChild.focus({ preventScroll: true });
+elements['give-up'].addEventListener('click', () => {
+  if (phase === 'playing') finish('Game ended', 'Start a new game whenever you’re ready.');
 });
+elements.next.addEventListener('click', () => {
+  if (phase !== 'finished') return;
+  phase = 'setup';
+  newPuzzle();
+  elements.colors.focus();
+});
+for (const [select, max] of [[elements.colors, maxColors], [elements.height, maxHeight]]) {
+  for (let value = 6; value <= max; value++) {
+    const option = document.createElement('option');
+    option.textContent = value;
+    select.append(option);
+  }
+}
 newPuzzle();

@@ -6,9 +6,12 @@ export function createGame({ layout, cap, mystery }) {
   return { pegs, cap, history: [], extra: false };
 }
 
+export function isCompletePeg(peg, cap) {
+  return peg.length === cap && peg.every(ring => ring.color === peg[0].color);
+}
+
 export function isSolved({ pegs, cap }) {
-  return pegs.every(peg => peg.length === 0 ||
-    (peg.length === cap && peg.every(ring => ring.color === peg[0].color)));
+  return pegs.every(peg => peg.length === 0 || isCompletePeg(peg, cap));
 }
 
 export function moveRing({ pegs, cap, history }, from, to) {
@@ -16,6 +19,7 @@ export function moveRing({ pegs, cap, history }, from, to) {
   const target = pegs[to];
   const ring = source.at(-1);
   if (from === to || !ring) return 'invalid-source';
+  if (isCompletePeg(source, cap)) return 'locked';
   if (target.length >= cap) return 'full';
   if (target.length && target.at(-1).color !== ring.color) return 'color-mismatch';
 

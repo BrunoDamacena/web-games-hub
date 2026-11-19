@@ -21,7 +21,7 @@
       </div>
       <div class="machine">
         <div class="machine-top">
-          <form id="setup" class="puzzle-setup">
+          <div id="setup" class="puzzle-setup" role="group" aria-label="Puzzle settings">
             <label class="level">Colors
               <select id="colors">
                 <option>2</option>
@@ -39,15 +39,14 @@
               </select>
             </label>
             <label class="mystery-option"><input id="mystery" type="checkbox"> Mystery rings</label>
-            <button type="submit">New puzzle</button>
-          </form>
+          </div>
           <div class="moves"><strong id="moves">0</strong> MOVES</div>
         </div>
         <div class="playfield">
           <div id="board" class="board" aria-label="Sorting board"></div>
           <div id="win" class="win" hidden>
-            <strong>Nicely sorted!</strong>
-            <button id="next" type="button">New puzzle</button>
+            <strong id="result"></strong>
+            <button id="next" type="button">New game</button>
           </div>
         </div>
         <p id="status" class="status" role="status">Tap a peg to pick up its top ring.</p>
@@ -55,11 +54,12 @@
           <button id="undo" type="button"><span aria-hidden="true">↶</span> Undo</button>
           <button id="restart" type="button"><span aria-hidden="true">↻</span> Restart</button>
           <button id="extra" type="button"><span aria-hidden="true">＋</span> Extra peg</button>
+          <button id="give-up" type="button" hidden>Give up</button>
         </div>
       </div>
       <aside class="instructions">
         <span class="info" aria-hidden="true">i</span>
-        <p><strong>How to play</strong> Tap a peg, then tap an empty peg or one with the same color on top. Fill each used peg with a single color. Turn on Mystery rings to hide lower rings until they reach the top.</p>
+        <p><strong>How to play</strong> Tap a peg, then tap an empty peg or one with room and the same color on top. Fill each used peg with a single color. Turn on Mystery rings to hide lower rings until they reach the top.</p>
       </aside>
     </section>
   </main>
