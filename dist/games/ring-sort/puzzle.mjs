@@ -1,55 +1,41 @@
 export const colors = { C: 'coral', B: 'blue', P: 'purple', L: 'gold', G: 'mint' };
 
+function shuffle(items) {
+  for (let i = items.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+}
+
 export function generatePuzzle(colorCount, height, previous) {
-  const solved = Object.keys(colors).slice(0, colorCount).map(color => Array(height).fill(color));
-  solved.push([], []);
+  const palette = Object.keys(colors).slice(0, colorCount);
+  shuffle(palette);
+  const donors = palette.map(color => Array(height).fill(color));
+  const spare = [];
+  const board = [...donors, spare];
 
-  let best;
-  let bestScore = 0;
-  // Try several walks so an early shuffle that traps matching rings at the base
-  // does not determine the final layout.
-  for (let attempt = 0; attempt < 6; attempt++) {
-    const board = solved.map(peg => [...peg]);
-    let lastMove;
-    // Each shuffle move can be reversed under the normal placement rules.
-    // Leaving a matching ring (or an empty peg) makes the original peg a legal destination.
-    for (let step = 0; step < colorCount * height * 6; step++) {
-      const moves = [];
-      board.forEach((source, from) => {
-        if (!source.length || (source.length > 1 && source.at(-1) !== source.at(-2))) return;
-        board.forEach((target, to) => {
-          if (from === to || target.length === height) return;
-          if (lastMove?.from === to && lastMove.to === from) return;
-          moves.push({ from, to });
-        });
-      });
-      if (!moves.length) break;
-      const { from, to } = moves[Math.floor(Math.random() * moves.length)];
-      board[to].push(board[from].pop());
-      lastMove = { from, to };
+  // Pull from single-color stacks so every transfer can be reversed.
+  // Borrow the spare to expose the first base, then leave one ring on it.
+  const [first, second] = donors;
+  while (first.length > 1) spare.push(first.pop());
+  first.push(second.pop());
+  while (spare.length > 1) first.push(spare.pop());
 
-      // A color change near the base breaks up more of the original stack.
-      let score = 0;
-      for (const peg of board) {
-        for (let slot = 1; slot < peg.length; slot++) {
-          if (peg[slot] !== peg[slot - 1]) score += height - slot;
-        }
-      }
-      if (score && score >= bestScore && board.some(peg => !peg.length)) {
-        best = board.map(peg => [...peg]);
-        bestScore = score;
-      }
-    }
+  // Fill the current base from two donors. Leave one ring on the earlier
+  // donor so it can become the base of the next stack.
+  let base = spare;
+  let donor = second;
+  for (const nextDonor of donors.slice(2)) {
+    const rings = [nextDonor.pop()];
+    while (donor.length > 1) rings.push(donor.pop());
+    shuffle(rings);
+    base.push(...rings);
+    base = donor;
+    donor = nextDonor;
   }
+  while (donor.length) base.push(donor.pop());
 
-  // Make two reversible moves to create a mixed stack if no walk did.
-  if (!best) {
-    best = solved.map(peg => [...peg]);
-    best[colorCount].push(best[1].pop());
-    best[1].push(best[0].pop());
-  }
-
-  // Different peg positions give a fresh layout even if a shuffle repeats.
-  if (JSON.stringify(best) === JSON.stringify(previous)) best.push(best.shift());
-  return best;
+  shuffle(board);
+  if (JSON.stringify(board) === JSON.stringify(previous)) board.push(board.shift());
+  return board;
 }

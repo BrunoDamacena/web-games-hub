@@ -62,17 +62,26 @@ test('adds one extra peg per attempt and disables the booster after a win', () =
 });
 
 test('generates a fresh mixed board with the requested ring counts and space', t => {
-  t.mock.method(Math, 'random', () => 0.57);
+  let seed = 57;
+  t.mock.method(Math, 'random', () => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return seed / 2 ** 32;
+  });
+
   for (let count = 2; count <= 5; count++) {
     for (let cap = 2; cap <= 5; cap++) {
-      const layout = generatePuzzle(count, cap);
-      assert.equal(layout.length, count + 2);
-      assert.ok(layout.some(peg => peg.length === 0));
-      assert.ok(layout.every(peg => peg.length <= cap));
-      assert.equal(isSolved(createGame({ layout, cap })), false);
-      const expected = Object.keys(colors).slice(0, count).flatMap(color => Array(cap).fill(color));
-      assert.deepEqual(layout.flat().sort(), expected.sort());
-      assert.notDeepEqual(generatePuzzle(count, cap, layout), layout);
+      const expected = Object.keys(colors).slice(0, count).flatMap(color => Array(cap).fill(color)).sort();
+      let previous;
+      for (let sample = 0; sample < 40; sample++) {
+        const layout = generatePuzzle(count, cap, previous);
+        assert.equal(layout.length, count + 1);
+        assert.equal(layout.filter(peg => peg.length === 0).length, 1);
+        assert.ok(layout.every(peg => !peg.length || (peg.length === cap && peg[0] !== peg[1])));
+        assert.equal(isSolved(createGame({ layout, cap })), false);
+        assert.deepEqual(layout.flat().sort(), expected);
+        assert.notDeepEqual(layout, previous);
+        previous = layout;
+      }
     }
   }
 });
@@ -103,20 +112,4 @@ test('a generated puzzle can be solved using the normal move rules', t => {
     }
   }
   assert.fail('The generated board had no legal solution');
-});
-
-test('tall puzzles regularly mix the two bottom rings', t => {
-  let seed;
-  t.mock.method(Math, 'random', () => {
-    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-    return seed / 2 ** 32;
-  });
-
-  let mixedBases = 0;
-  for (let sample = 1; sample <= 40; sample++) {
-    seed = sample;
-    const layout = generatePuzzle(5, 5);
-    mixedBases += layout.filter(peg => peg.length >= 2 && peg[0] !== peg[1]).length;
-  }
-  assert.ok(mixedBases >= 80, `Expected at least two mixed bases per board on average, got ${mixedBases / 40}`);
 });
