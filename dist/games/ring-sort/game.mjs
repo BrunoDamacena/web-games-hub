@@ -2,11 +2,11 @@ import { colors, generatePuzzle, maxColors, maxHeight } from './puzzle.mjs';
 import { addExtraPeg, createGame, isCompletePeg, isSolved, moveRing, undoMove } from './rules.mjs';
 
 const prompts = {
-  start: 'Tap a peg to pick up its top ring.',
-  empty: 'Choose a peg with a ring on it.',
+  start: 'Toque em um pino para pegar o anel do topo.',
+  empty: 'Escolha um pino com pelo menos um anel.',
 };
 const elements = Object.fromEntries(
-  ['setup', 'colors', 'height', 'mystery', 'moves', 'board', 'status', 'win', 'result', 'next', 'undo', 'restart', 'extra', 'give-up']
+  ['setup', 'colors', 'height', 'mystery', 'moves', 'move-label', 'board', 'status', 'win', 'result', 'next', 'undo', 'restart', 'extra', 'give-up']
     .map(id => [id, document.getElementById(id)]),
 );
 
@@ -26,10 +26,11 @@ function render() {
   elements.setup.hidden = phase !== 'setup';
   elements['give-up'].hidden = phase !== 'playing';
   elements.moves.textContent = history.length;
+  elements['move-label'].textContent = history.length === 1 ? 'JOGADA' : 'JOGADAS';
   elements.undo.disabled = finished || history.length === 0;
   elements.restart.disabled = finished;
   elements.extra.disabled = extra || finished;
-  elements.extra.lastChild.textContent = extra ? ' Peg added' : ' Extra peg';
+  elements.extra.lastChild.textContent = extra ? ' Pino adicionado' : ' Pino extra';
   elements.win.hidden = !finished;
   elements.board.inert = finished;
   elements.board.classList.toggle('tall', cap > 5);
@@ -44,10 +45,10 @@ function render() {
     button.dataset.peg = index;
     button.setAttribute('aria-pressed', selected === index);
     if (complete) button.setAttribute('aria-disabled', 'true');
-    const names = peg.map(ring => complete || ring.revealed ? colors[ring.color] : 'mystery ring').reverse();
-    button.setAttribute('aria-label', 'Peg ' + (index + 1) + ', ' +
-      (names.length ? names.join(', ') + ' from top to bottom' : 'empty') +
-      ', capacity ' + cap + (complete ? ', complete and locked' : ''));
+    const names = peg.map(ring => complete || ring.revealed ? colors[ring.color] : 'anel misterioso').reverse();
+    button.setAttribute('aria-label', 'Pino ' + (index + 1) + ', ' +
+      (names.length ? names.join(', ') + ' (de cima para baixo)' : 'vazio') +
+      ', capacidade para ' + cap + ' anéis' + (complete ? ', completo e bloqueado' : ''));
     for (const part of ['post', 'foot']) {
       const shape = document.createElement('span');
       shape.className = part;
@@ -85,7 +86,7 @@ function choose(index, button) {
   if (phase === 'finished') return;
   const target = game.pegs[index];
   if (isCompletePeg(target, game.cap)) {
-    say('That peg is complete and locked.');
+    say('Esse pino está completo e bloqueado.');
     return;
   }
   if (selected === index) {
@@ -101,7 +102,7 @@ function choose(index, button) {
     }
     selected = index;
     render();
-    say('Pick a peg for the ' + colors[target.at(-1).color] + ' ring.');
+    say('Escolha um pino para o anel ' + colors[target.at(-1).color] + '.');
     return;
   }
 
@@ -110,12 +111,13 @@ function choose(index, button) {
     button.classList.remove('invalid');
     void button.offsetWidth;
     button.classList.add('invalid');
-    say(result === 'full' ? 'That peg is full. Choose another peg.' : 'Choose an empty peg or one with the same color on top.');
+    say(result === 'full' ? 'Esse pino está cheio. Escolha outro.' : 'Escolha um pino vazio ou com um anel da mesma cor no topo.');
     return;
   }
 
   if (isSolved(game)) {
-    finish('Nicely sorted!', 'Puzzle complete in ' + game.history.length + ' moves.');
+    const moves = game.history.length;
+    finish('Parabéns!', `Você organizou os anéis em ${moves} ${moves === 1 ? 'jogada' : 'jogadas'}.`);
     return;
   }
   phase = 'playing';
@@ -151,15 +153,15 @@ elements.undo.addEventListener('click', () => {
   if (phase === 'finished' || !undoMove(game)) return;
   selected = null;
   render();
-  say('Move undone. ' + prompts.start);
+  say('Jogada desfeita. ' + prompts.start);
 });
 elements.extra.addEventListener('click', () => {
   if (phase === 'finished' || !addExtraPeg(game)) return;
   render();
-  say('An empty peg has been added.');
+  say('Um pino vazio foi adicionado.');
 });
 elements['give-up'].addEventListener('click', () => {
-  if (phase === 'playing') finish('Game ended', 'Start a new game whenever you’re ready.');
+  if (phase === 'playing') finish('Partida encerrada', 'Comece uma nova partida quando quiser.');
 });
 elements.next.addEventListener('click', () => {
   if (phase !== 'finished') return;

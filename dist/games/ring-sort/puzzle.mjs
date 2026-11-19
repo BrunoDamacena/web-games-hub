@@ -1,8 +1,8 @@
 export const colors = {
-  C: 'coral', B: 'blue', P: 'purple', L: 'gold', G: 'mint',
-  T: 'teal', R: 'red', I: 'indigo', O: 'orange', K: 'pink',
-  S: 'sky', V: 'olive', M: 'magenta', A: 'amber', N: 'navy',
-  E: 'emerald', U: 'plum', D: 'brown', Y: 'lime', H: 'slate',
+  C: 'coral', B: 'azul', P: 'roxo', L: 'dourado', G: 'verde-menta',
+  T: 'azul-petróleo', R: 'vermelho', I: 'índigo', O: 'laranja', K: 'rosa',
+  S: 'azul-claro', V: 'verde-oliva', M: 'magenta', A: 'âmbar', N: 'azul-marinho',
+  E: 'verde-esmeralda', U: 'ameixa', D: 'marrom', Y: 'verde-limão', H: 'cinza-ardósia',
 };
 export const maxColors = Object.keys(colors).length;
 export const maxHeight = 20;
