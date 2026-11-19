@@ -59,7 +59,7 @@ erase.className = 'word-key';
 erase.dataset.key = 'Backspace';
 erase.textContent = '⌫';
 erase.setAttribute('aria-label', 'Apagar letra');
-keyboard.lastElementChild.append(erase);
+keyboard.lastElementChild.append(erase, submit);
 keyboard.addEventListener('click', event => {
   const key = event.target.closest('button')?.dataset.key;
   if (!key || keyboard.disabled) return;
@@ -90,9 +90,10 @@ async function loadWords(file) {
 
 const rows = Array.from({ length: maxAttempts }, () => {
   const row = document.createElement('li');
-  const tiles = Array.from({ length: wordLength }, () => {
+  const tiles = Array.from({ length: wordLength }, (_, position) => {
     const tile = document.createElement('span');
     tile.className = 'word-tile';
+    tile.style.setProperty('--reveal-delay', `${position * 55}ms`);
     tile.setAttribute('aria-hidden', 'true');
     row.append(tile);
     return tile;
