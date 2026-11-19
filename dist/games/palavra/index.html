@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Adivinhe uma palavra de cinco letras em até seis tentativas e jogue quantas vezes quiser.">
+  <title>Palavra · Web Games Hub</title>
+  <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+  <header class="site-header"><nav>
+    <a class="brand" href="../../"><span class="mark" aria-hidden="true">◎</span> <span class="brand-name">Web Games Hub</span></a>
+    <a class="nav-link" href="../../">Todos os jogos</a>
+  </nav></header>
+  <main>
+    <section aria-labelledby="game-title">
+      <div class="intro">
+        <h1 id="game-title"><em>Palavra</em></h1>
+        <p>Adivinhe a palavra de cinco letras.</p>
+      </div>
+      <div class="machine word-machine">
+        <div class="machine-top">
+          <div class="moves"><strong id="attempts">0/6</strong> TENTATIVAS</div>
+          <div class="controls">
+            <button id="word-help" type="button">Como jogar</button>
+            <button id="new-round" type="button" disabled>Nova palavra</button>
+          </div>
+        </div>
+        <form id="guess-form">
+          <div class="playfield">
+            <ol id="word-grid" class="word-grid" aria-label="Tentativas"></ol>
+          </div>
+          <p id="status" class="status" role="status">Carregando palavras…</p>
+          <div class="controls word-form">
+            <button id="submit-guess" type="submit" disabled>Enviar</button>
+          </div>
+        </form>
+        <fieldset id="word-keyboard" class="word-keyboard" aria-label="Teclado do jogo" disabled></fieldset>
+      </div>
+      <dialog id="word-tutorial" class="machine word-tutorial" aria-labelledby="tutorial-title">
+        <h2 id="tutorial-title">Como jogar</h2>
+        <p>Descubra a palavra de cinco letras em até seis tentativas. A cada palpite, o tabuleiro e o teclado mostram estas pistas.</p>
+        <ul class="tutorial-legend">
+          <li>
+            <span class="word-tile" data-score="correct" data-mark="✓" aria-hidden="true">P</span>
+            <span><strong>Verde</strong> A letra está no lugar certo.</span>
+          </li>
+          <li>
+            <span class="word-tile" data-score="present" data-mark="↔" aria-hidden="true">O</span>
+            <span><strong>Amarelo</strong> A letra aparece em outro lugar.</span>
+          </li>
+          <li>
+            <span class="word-tile" data-score="absent" data-mark="×" aria-hidden="true">N</span>
+            <span><strong>Cinza</strong> Não há uma ocorrência disponível dessa letra.</span>
+          </li>
+        </ul>
+        <p>A palavra pode ter letras repetidas. Você pode digitar sem acentos.</p>
+        <p>Selecione <strong>Nova palavra</strong> para jogar de novo a qualquer hora.</p>
+        <form method="dialog" class="controls word-form">
+          <button type="submit" autofocus>Jogar</button>
+        </form>
+      </dialog>
+    </section>
+  </main>
+  <script type="module" src="./game.mjs"></script>
+</body>
+</html>
