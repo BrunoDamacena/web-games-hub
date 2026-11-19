@@ -1,0 +1,48 @@
+    <section id="game" aria-labelledby="game-title">
+      <div class="intro">
+        <h1 id="game-title">Anéis por <em>Cor</em></h1>
+        <p>Separe os anéis por cor no seu ritmo.</p>
+      </div>
+      <div class="machine">
+        <div class="machine-top">
+          <div id="setup" class="puzzle-setup" role="group" aria-label="Configurações da partida">
+            <label class="level">Cores
+              <select id="colors">
+                <option>2</option>
+                <option selected>3</option>
+                <option>4</option>
+                <option>5</option>
+              </select>
+            </label>
+            <label class="level">Anéis por pino
+              <select id="height">
+                <option>2</option>
+                <option>3</option>
+                <option selected>4</option>
+                <option>5</option>
+              </select>
+            </label>
+            <label class="mystery-option"><input id="mystery" type="checkbox"> Anéis misteriosos</label>
+          </div>
+          <div class="moves"><strong id="moves">0</strong> <span id="move-label">JOGADAS</span></div>
+        </div>
+        <div class="playfield">
+          <div id="board" class="board" aria-label="Tabuleiro de anéis"></div>
+          <div id="win" class="win" hidden>
+            <strong id="result"></strong>
+            <button id="next" type="button">Nova partida</button>
+          </div>
+        </div>
+        <p id="status" class="status" role="status">Toque em um pino para pegar o anel do topo.</p>
+        <div class="controls" aria-label="Controles do jogo">
+          <button id="undo" type="button"><span aria-hidden="true">↶</span> Desfazer</button>
+          <button id="restart" type="button"><span aria-hidden="true">↻</span> Reiniciar</button>
+          <button id="extra" type="button"><span aria-hidden="true">＋</span> Pino extra</button>
+          <button id="give-up" type="button" hidden>Desistir</button>
+        </div>
+      </div>
+      <aside class="instructions">
+        <span class="info" aria-hidden="true">i</span>
+        <p><strong>Como jogar</strong> Toque em um pino e depois em outro que esteja vazio ou que tenha espaço e um anel da mesma cor no topo. Preencha cada pino usado com anéis de uma só cor. Ative a opção Anéis misteriosos para revelar os anéis somente quando chegarem ao topo.</p>
+      </aside>
+    </section>
