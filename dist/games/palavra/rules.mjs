@@ -1,18 +1,20 @@
+export const maxAttempts = 6;
+
 export function normalizeWord(word) {
   return word.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
 }
 
 export function scoreGuess(guess, answer) {
-  const letters = normalizeWord(guess);
+  const letters = [...normalizeWord(guess)];
   const target = normalizeWord(answer);
   const remaining = [...target];
-  const scores = [...letters].map((letter, index) => {
+  const scores = letters.map((letter, index) => {
     if (letter !== target[index]) return 'absent';
     remaining[index] = null;
     return 'correct';
   });
 
-  for (const [index, letter] of [...letters].entries()) {
+  for (const [index, letter] of letters.entries()) {
     if (scores[index] === 'correct') continue;
     const match = remaining.indexOf(letter);
     if (match === -1) continue;

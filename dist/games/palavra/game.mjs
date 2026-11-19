@@ -1,8 +1,8 @@
-import { normalizeWord, pickAnswer, scoreGuess, updateLetterScores } from './rules.mjs';
+import { maxAttempts, normalizeWord, pickAnswer, scoreGuess, updateLetterScores } from './rules.mjs';
 
-const maxAttempts = 6;
+import { recordRound } from './progress.mjs';
 const wordLength = 5;
-const portugueseLetter = /^\p{Script=Latin}$/u;
+const latinLetter = /^\p{Script=Latin}$/u;
 const grid = document.querySelector('#word-grid');
 const form = document.querySelector('#guess-form');
 const submit = document.querySelector('#submit-guess');
@@ -10,7 +10,7 @@ const newRound = document.querySelector('#new-round');
 const keyboard = document.querySelector('#word-keyboard');
 const tutorial = document.querySelector('#word-tutorial');
 const help = document.querySelector('#word-help');
-const attempts = document.querySelector('#attempts');
+const notice = document.querySelector('#word-notice');
 
 const feedback = {
   correct: ['✓', 'no lugar certo'],
@@ -68,13 +68,18 @@ keyboard.addEventListener('click', event => {
   if (event.detail > 0) focusCell();
 });
 
+function drawClue(element, score) {
+  const [mark, description] = feedback[score] ?? ['', ''];
+  element.dataset.score = score ?? '';
+  element.dataset.mark = mark;
+  return description;
+}
+
 function drawKeyboard(scores) {
   for (const [letter, key] of letterKeys) {
-    const score = scores.get(letter);
-    key.dataset.score = score ?? '';
-    key.dataset.mark = feedback[score]?.[0] ?? '';
-    const label = letter.toUpperCase();
-    key.setAttribute('aria-label', score ? `${label}, ${feedback[score][1]}` : label);
+    const description = drawClue(key, scores.get(letter));
+    const label = key.textContent;
+    key.setAttribute('aria-label', description ? `${label}, ${description}` : label);
   }
 }
 
@@ -82,7 +87,7 @@ async function loadWords(file) {
   const response = await fetch(new URL(file, import.meta.url));
   if (!response.ok) throw new Error('Não foi possível carregar o dicionário.');
   const words = (await response.text()).trim().split(/\r?\n/);
-  if (!words.every(word => word.length === wordLength && [...word].every(letter => portugueseLetter.test(letter)))) {
+  if (!words.every(word => word.length === wordLength && [...word].every(letter => latinLetter.test(letter)))) {
     throw new Error('Dicionário inválido.');
   }
   return words;
@@ -135,7 +140,7 @@ const guessCells = Array.from({ length: wordLength }, (_, index) => {
         form.requestSubmit(submit);
         return;
       default:
-        if (!portugueseLetter.test(event.key)) return;
+        if (!latinLetter.test(event.key)) return;
         enterLetters(event.key);
     }
     event.preventDefault();
@@ -162,8 +167,10 @@ function setLetter(index, letter) {
 }
 
 function enterLetters(text) {
-  const letters = [...text.normalize('NFC').toLowerCase()].filter(letter => portugueseLetter.test(letter));
-  letters.slice(0, wordLength - selectedCell).forEach((letter, offset) => {
+  const letters = [...text.normalize('NFC').toLowerCase()]
+    .filter(letter => latinLetter.test(letter))
+    .slice(0, wordLength - selectedCell);
+  letters.forEach((letter, offset) => {
     setLetter(selectedCell + offset, letter);
   });
   selectCell(selectedCell + letters.length);
@@ -190,13 +197,34 @@ function drawRow(index, word = '', scores = []) {
   const descriptions = [];
   tiles.forEach((tile, position) => {
     const letter = word[position]?.toUpperCase() ?? '';
-    const score = scores[position] ?? '';
     tile.textContent = letter;
-    tile.dataset.score = score;
-    tile.dataset.mark = feedback[score]?.[0] ?? '';
-    if (score) descriptions.push(`${letter} ${feedback[score][1]}`);
+    const description = drawClue(tile, scores[position]);
+    if (description) descriptions.push(`${letter} ${description}`);
   });
   row.setAttribute('aria-label', descriptions.join(', '));
+}
+
+let errorTimeout;
+let rowShake;
+
+function clearNotice() {
+  clearTimeout(errorTimeout);
+  notice.textContent = '';
+  rowShake?.cancel();
+}
+
+function rejectGuess(row) {
+  clearNotice();
+  notice.textContent = 'essa palavra não é aceita';
+  errorTimeout = setTimeout(clearNotice, 2000);
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  rowShake = row.animate(
+    ['0px', '-4px', '4px', '-3px', '0px'].map(offset => ({
+      transform: `translateX(${offset})`,
+    })),
+    { duration: 260, easing: 'ease-out' },
+  );
 }
 
 try {
@@ -210,42 +238,46 @@ try {
   const letterScores = new Map();
 
   function startRound() {
+    clearNotice();
     answer = pickAnswer(answers, answer);
     played = 0;
     letterScores.clear();
     drawKeyboard(letterScores);
     keyboard.disabled = false;
     rows.forEach((_, index) => drawRow(index));
-    attempts.textContent = `0/${maxAttempts}`;
     activateRow(played);
     submit.disabled = false;
+    focusCell();
   }
 
   form.addEventListener('submit', event => {
     event.preventDefault();
     if (submit.disabled) return;
-    const letters = guessCells.map(cell => cell.value.normalize('NFC').toLowerCase());
-    const invalidCell = letters.findIndex(letter => !portugueseLetter.test(letter));
-    if (invalidCell !== -1) {
-      selectCell(invalidCell);
+    const emptyCell = guessCells.findIndex(cell => !cell.value);
+    if (emptyCell !== -1) {
+      selectCell(emptyCell);
       focusCell();
       return;
     }
-    const word = dictionary.get(normalizeWord(letters.join('')));
+    const guess = guessCells.map(cell => cell.value).join('');
+    const word = dictionary.get(normalizeWord(guess));
     if (!word) {
+      rejectGuess(rows[played].row);
       focusCell();
       return;
     }
 
+    clearNotice();
     const scores = scoreGuess(word, answer);
     updateLetterScores(letterScores, word, scores);
     drawKeyboard(letterScores);
     const won = scores.every(score => score === 'correct');
     drawRow(played, won ? answer : word, scores);
     played++;
-    attempts.textContent = `${played}/${maxAttempts}`;
 
     if (won || played === maxAttempts) {
+      recordRound(played, won);
+      if (!won) notice.textContent = `palavra certa: ${answer.toUpperCase()}`;
       keyboard.disabled = true;
       submit.disabled = true;
       newRound.focus();
@@ -255,16 +287,12 @@ try {
     focusCell();
   });
 
-  newRound.addEventListener('click', () => {
-    startRound();
-    focusCell();
-  });
+  newRound.addEventListener('click', startRound);
   if (tutorial.open) {
     await new Promise(resolve => tutorial.addEventListener('close', resolve, { once: true }));
   }
   newRound.disabled = false;
   startRound();
-  if (!tutorial.open) focusCell();
 } catch (error) {
   console.error(error);
 }

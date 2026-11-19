@@ -20,21 +20,36 @@
       </div>
       <div class="machine word-machine">
         <div class="machine-top">
-          <div class="moves"><strong id="attempts">0/6</strong> TENTATIVAS</div>
           <div class="controls">
             <button id="word-help" type="button">Como jogar</button>
-            <button id="new-round" type="button" disabled>Nova palavra</button>
+            <button id="open-progress" type="button">Progresso</button>
           </div>
+          <div class="controls"><button id="new-round" type="button" disabled>Nova palavra</button></div>
         </div>
         <form id="guess-form">
           <div class="playfield">
             <ol id="word-grid" class="word-grid" aria-label="Tentativas"></ol>
+            <div id="word-notice" class="word-notice" role="status"></div>
           </div>
         </form>
         <fieldset id="word-keyboard" class="word-keyboard" aria-label="Teclado do jogo" disabled>
           <button id="submit-guess" class="word-key word-submit" type="submit" form="guess-form" disabled>Enviar</button>
         </fieldset>
       </div>
+      <dialog id="word-progress" class="machine word-tutorial" aria-labelledby="progress-title">
+        <h2 id="progress-title">Progresso</h2>
+        <dl class="word-stats">
+          <div><dt>Jogos</dt><dd id="games-played">0</dd></div>
+          <div><dt>Vitórias</dt><dd id="win-rate">0%</dd></div>
+          <div><dt>Sequência atual</dt><dd id="current-streak">0</dd></div>
+          <div><dt>Melhor sequência</dt><dd id="best-streak">0</dd></div>
+        </dl>
+        <h3 id="distribution-title">Distribuição de tentativas</h3>
+        <ul id="guess-distribution" class="word-chart" aria-labelledby="distribution-title"></ul>
+        <form method="dialog" class="controls word-form">
+          <button type="submit">Fechar</button>
+        </form>
+      </dialog>
       <dialog id="word-tutorial" class="machine word-tutorial" aria-labelledby="tutorial-title">
         <h2 id="tutorial-title">Como jogar</h2>
         <p>Descubra a palavra de cinco letras em até seis tentativas. A cada palpite, o tabuleiro e o teclado mostram estas pistas.</p>
