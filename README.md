@@ -1,6 +1,6 @@
 # Web Games Hub
 
-Web Games Hub is a browser games hub. Its first game, Ring Sort, is a color-sorting puzzle.
+Web Games Hub is a browser games hub. Play Ring Sort, a color-sorting puzzle, or Palavra, a Brazilian Portuguese word puzzle.
 
 ## Frontend stack
 
@@ -15,7 +15,7 @@ npm ci
 npm run dev
 ```
 
-Open [Web Games Hub locally](http://127.0.0.1:8000) and select **Ring Sort** from the games menu. `npm start` also starts the local server. Refresh the page after making edits, and press **Ctrl+C** in the terminal to stop the server.
+Open [Web Games Hub locally](http://127.0.0.1:8000) and select a game from the menu. `npm start` also starts the local server. Refresh the page after making edits, and press **Ctrl+C** in the terminal to stop the server.
 
 ## Project layout
 
@@ -23,15 +23,19 @@ Open [Web Games Hub locally](http://127.0.0.1:8000) and select **Ring Sort** fro
 - `dist/style.css` contains the shared styles.
 - `dist/games/ring-sort/` contains the game page, rules, and puzzle generator.
 
+- `dist/games/palavra/` contains the word game and its local dictionaries.
+
+Palavra uses a snapshot of Termo’s single-word game data from the [public game bundle](https://term.ooo/multi.811eb29.js). It includes 10,589 accepted words with Termo’s display spellings and 1,442 possible answers. Palavra selects answers at random. [Termo attributes the word data to its MIT-licensed Brazilian Portuguese lexicon](https://term.ooo/sobre/). The lexicon license is included alongside the word lists.
+
 ## Run the tests
 
-Run the Ring Sort unit tests from the repository root:
+Run the unit tests from the repository root:
 
 ```sh
 npm test
 ```
 
-The Ring Sort tests use Node's built-in test runner and can run before installing the local static server.
+The tests use Node's built-in test runner and can run before installing the local static server.
 
 ## Deployment
 
