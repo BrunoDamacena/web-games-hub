@@ -1,5 +1,5 @@
 import { colors, generatePuzzle, maxColors, maxHeight } from './puzzle.mjs';
-import { addExtraPeg, createGame, isCompletePeg, isSolved, moveRing, undoMove } from './rules.mjs';
+import { addExtraPeg, canMakeProgress, createGame, hasValidMoves, isCompletePeg, isSolved, moveRing, undoMove } from './rules.mjs';
 
 const prompts = {
   start: 'Toque em um pino para pegar o anel do topo.',
@@ -14,6 +14,7 @@ let puzzle;
 let game;
 let selected;
 let phase = 'setup';
+let restartAfterFinish = false;
 
 function say(message) {
   elements.status.textContent = message;
@@ -120,16 +121,25 @@ function choose(index, button) {
     finish('Parabéns!', `Você organizou os anéis em ${moves} ${moves === 1 ? 'jogada' : 'jogadas'}.`);
     return;
   }
+  if (!canMakeProgress(game)) {
+    const message = hasValidMoves(game)
+      ? 'As jogadas restantes só movem os mesmos anéis de um lado para outro. Reinicie para tentar de novo.'
+      : 'Não há mais jogadas válidas. Reinicie para tentar de novo.';
+    finish('Fim de jogo', message, true);
+    return;
+  }
   phase = 'playing';
   selected = null;
   render();
   say(prompts.start);
 }
 
-function finish(title, message) {
+function finish(title, message, canRestart = false) {
   phase = 'finished';
+  restartAfterFinish = canRestart;
   selected = null;
   elements.result.textContent = title;
+  elements.next.textContent = canRestart ? 'Reiniciar' : 'Nova partida';
   render();
   say(message);
   elements.next.focus();
@@ -165,6 +175,12 @@ elements['give-up'].addEventListener('click', () => {
 });
 elements.next.addEventListener('click', () => {
   if (phase !== 'finished') return;
+  if (restartAfterFinish) {
+    phase = 'playing';
+    start();
+    elements.board.firstElementChild.focus();
+    return;
+  }
   phase = 'setup';
   newPuzzle();
   elements.colors.focus();

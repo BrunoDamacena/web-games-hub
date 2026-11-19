@@ -1,9 +1,46 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { colors, generatePuzzle } from '../src/games/ring-sort/puzzle.mjs';
-import { addExtraPeg, createGame, isSolved, moveRing, undoMove } from '../src/games/ring-sort/rules.mjs';
+import { addExtraPeg, canMakeProgress, createGame, hasValidMoves, isSolved, moveRing, undoMove } from '../src/games/ring-sort/rules.mjs';
 
 const layout = [['B', 'C'], ['C'], ['B'], []];
+
+test('detects a deadlock after a legal move leaves only mismatches and full targets', () => {
+  const game = createGame({ layout: [['A', 'C'], ['B', 'C'], [], ['B', 'A']], cap: 2 });
+  assert.equal(hasValidMoves(game), true);
+  assert.equal(moveRing(game, 3, 2), 'moved');
+  const stuck = structuredClone(game);
+  assert.equal(hasValidMoves(game), false);
+  assert.equal(canMakeProgress(game), false);
+  assert.equal(isSolved(game), false);
+  assert.deepEqual(game, stuck);
+
+  const solved = createGame({ layout: [['A', 'A'], []], cap: 2 });
+  assert.equal(isSolved(solved), true);
+  assert.equal(hasValidMoves(solved), false);
+});
+
+test('detects a forced loop even when rings can still move', () => {
+  const game = createGame({ layout: [['C', 'C'], ['C', 'A'], ['A', 'B'], ['A', 'B', 'B']], cap: 3 });
+  assert.equal(hasValidMoves(game), true);
+  assert.equal(canMakeProgress(game), false);
+  assert.equal(moveRing(game, 3, 2), 'moved');
+  assert.equal(canMakeProgress(game), false);
+  assert.equal(moveRing(game, 2, 3), 'moved');
+  assert.equal(canMakeProgress(game), false);
+});
+
+test('recognizes a top run that can be removed across multiple pegs', () => {
+  const game = createGame({
+    layout: ['BBC', 'BAC', 'ADD', 'DCC', 'ADAB'].map(peg => [...peg]),
+    cap: 4,
+  });
+  assert.equal(canMakeProgress(game), true);
+  assert.equal(moveRing(game, 3, 0), 'moved');
+  assert.equal(canMakeProgress(game), true);
+  assert.equal(moveRing(game, 3, 1), 'moved');
+  assert.equal(game.pegs[3].at(-1).color, 'D');
+});
 
 test('moves one top ring onto an empty peg or matching color', () => {
   const game = createGame({ layout, cap: 2 });

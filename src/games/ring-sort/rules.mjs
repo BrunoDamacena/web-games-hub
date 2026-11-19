@@ -14,14 +14,48 @@ export function isSolved({ pegs, cap }) {
   return pegs.every(peg => peg.length === 0 || isCompletePeg(peg, cap));
 }
 
-export function moveRing({ pegs, cap, history }, from, to) {
-  const source = pegs[from];
-  const target = pegs[to];
+function moveBlocker(source, target, cap) {
   const ring = source.at(-1);
-  if (from === to || !ring) return 'invalid-source';
+  if (source === target || !ring) return 'invalid-source';
   if (isCompletePeg(source, cap)) return 'locked';
   if (target.length >= cap) return 'full';
   if (target.length && target.at(-1).color !== ring.color) return 'color-mismatch';
+}
+
+export function hasValidMoves({ pegs, cap }) {
+  return pegs.some(source => pegs.some(target => !moveBlocker(source, target, cap)));
+}
+
+export function canMakeProgress({ pegs, cap }) {
+  let emptySlots = 0;
+  const slotsByColor = new Map();
+  for (const peg of pegs) {
+    const top = peg.at(-1);
+    if (!top) {
+      emptySlots += cap;
+    } else {
+      slotsByColor.set(top.color, (slotsByColor.get(top.color) ?? 0) + cap - peg.length);
+    }
+  }
+
+  // Until a whole top run moves, the exposed colors stay the same. Moving
+  // part of a run changes its size and the space on other matching pegs
+  // by the same amount, so it cannot make a previously blocked run removable.
+  return pegs.some(peg => {
+    if (!peg.length || isCompletePeg(peg, cap)) return false;
+    const { color } = peg.at(-1);
+    let run = 1;
+    while (run < peg.length && peg.at(-1 - run).color === color) run++;
+    const available = emptySlots + slotsByColor.get(color) - (cap - peg.length);
+    return available >= run;
+  });
+}
+
+export function moveRing({ pegs, cap, history }, from, to) {
+  const source = pegs[from];
+  const target = pegs[to];
+  const blocker = moveBlocker(source, target, cap);
+  if (blocker) return blocker;
 
   history.push({ from, to });
   target.push(source.pop());
