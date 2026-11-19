@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sort colorful rings at your own pace in Web Games Hub, a little browser arcade.">
+  <title>Ring Sort · Web Games Hub</title>
+  <link rel="stylesheet" href="../../style.css">
+</head>
+<body>
+  <header class="site-header"><nav>
+    <a class="brand" href="../../"><span class="mark" aria-hidden="true">◎</span> <span class="brand-name">Web Games Hub</span></a>
+    <a class="nav-link" href="../../">All games</a>
+  </nav></header>
+  <main>
+    <section id="game" aria-labelledby="game-title">
+      <div class="intro">
+        <p class="eyebrow"><span></span> THE PUZZLE ARCADE</p>
+        <h1 id="game-title">Ring <em>Sort</em></h1>
+        <p>A little order for a colorful world.</p>
+      </div>
+      <div class="machine">
+        <div class="machine-top">
+          <form id="setup" class="puzzle-setup">
+            <label class="level">Colors
+              <select id="colors">
+                <option>2</option>
+                <option selected>3</option>
+                <option>4</option>
+                <option>5</option>
+              </select>
+            </label>
+            <label class="level">Stack height
+              <select id="height">
+                <option>2</option>
+                <option>3</option>
+                <option selected>4</option>
+                <option>5</option>
+              </select>
+            </label>
+            <label class="mystery-option"><input id="mystery" type="checkbox"> Mystery rings</label>
+            <button type="submit">New puzzle</button>
+          </form>
+          <div class="moves"><strong id="moves">0</strong> MOVES</div>
+        </div>
+        <div class="playfield">
+          <div id="board" class="board" aria-label="Sorting board"></div>
+          <div id="win" class="win" hidden>
+            <strong>Nicely sorted!</strong>
+            <button id="next" type="button">New puzzle</button>
+          </div>
+        </div>
+        <p id="status" class="status" role="status">Tap a peg to pick up its top ring.</p>
+        <div class="controls" aria-label="Game controls">
+          <button id="undo" type="button"><span aria-hidden="true">↶</span> Undo</button>
+          <button id="restart" type="button"><span aria-hidden="true">↻</span> Restart</button>
+          <button id="extra" type="button"><span aria-hidden="true">＋</span> Extra peg</button>
+        </div>
+      </div>
+      <aside class="instructions">
+        <span class="info" aria-hidden="true">i</span>
+        <p><strong>How to play</strong> Tap a peg, then tap an empty peg or one with the same color on top. Fill each used peg with a single color. Turn on Mystery rings to hide lower rings until they reach the top.</p>
+      </aside>
+    </section>
+  </main>
+  <script type="module" src="./game.mjs"></script>
+</body>
+</html>
