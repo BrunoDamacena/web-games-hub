@@ -11,7 +11,7 @@ const keyboard = document.querySelector('#word-keyboard');
 const tutorial = document.querySelector('#word-tutorial');
 const help = document.querySelector('#word-help');
 const attempts = document.querySelector('#attempts');
-const status = document.querySelector('#status');
+
 const feedback = {
   correct: ['✓', 'no lugar certo'],
   present: ['↔', 'em outro lugar'],
@@ -197,7 +197,6 @@ function drawRow(index, word = '', scores = []) {
     if (score) descriptions.push(`${letter} ${feedback[score][1]}`);
   });
   row.setAttribute('aria-label', descriptions.join(', '));
-  return descriptions.join(', ');
 }
 
 try {
@@ -220,7 +219,6 @@ try {
     attempts.textContent = `0/${maxAttempts}`;
     activateRow(played);
     submit.disabled = false;
-    status.textContent = 'Digite seu primeiro palpite.';
   }
 
   form.addEventListener('submit', event => {
@@ -230,13 +228,11 @@ try {
     const invalidCell = letters.findIndex(letter => !portugueseLetter.test(letter));
     if (invalidCell !== -1) {
       selectCell(invalidCell);
-      status.textContent = 'Digite uma palavra de cinco letras.';
       focusCell();
       return;
     }
     const word = dictionary.get(normalizeWord(letters.join('')));
     if (!word) {
-      status.textContent = 'Essa palavra não está no dicionário.';
       focusCell();
       return;
     }
@@ -245,20 +241,16 @@ try {
     updateLetterScores(letterScores, word, scores);
     drawKeyboard(letterScores);
     const won = scores.every(score => score === 'correct');
-    const description = drawRow(played, won ? answer : word, scores);
+    drawRow(played, won ? answer : word, scores);
     played++;
     attempts.textContent = `${played}/${maxAttempts}`;
 
     if (won || played === maxAttempts) {
-      status.textContent = won
-        ? `Você acertou! A palavra era ${answer.toUpperCase()}.`
-        : `A palavra era ${answer.toUpperCase()}. Último palpite: ${description}.`;
       keyboard.disabled = true;
       submit.disabled = true;
       newRound.focus();
       return;
     }
-    status.textContent = `Tentativa ${played}: ${description}.`;
     activateRow(played);
     focusCell();
   });
@@ -268,12 +260,11 @@ try {
     focusCell();
   });
   if (tutorial.open) {
-    status.textContent = '';
     await new Promise(resolve => tutorial.addEventListener('close', resolve, { once: true }));
   }
   newRound.disabled = false;
   startRound();
   if (!tutorial.open) focusCell();
-} catch {
-  status.textContent = 'Não foi possível carregar as palavras. Recarregue a página para tentar de novo.';
+} catch (error) {
+  console.error(error);
 }
